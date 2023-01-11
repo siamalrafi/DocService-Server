@@ -41,11 +41,9 @@ async function run() {
             const booking = req.body;
             const result = await BookingCollectoin.insertOne(booking);
             res.send(result);
+        });
 
-
-
-
-        })
+        
 
 
 
