@@ -18,24 +18,59 @@ const uri = `mongodb+srv://${process.env.SECRET_DB_NAME}:${process.env.SECRET_DB
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run() {
+
     try {
         const DocServiceDBCollectoin = client.db("DocServiceDB").collection("Services");
-        const doc = {
-            title: "Doc Service",
-            content: "Doc Service content",
-        }
-        const result = await DocServiceDBCollectoin.insertOne(doc);
+        const BookingCollectoin = client.db("DocServiceDB").collection("Bookings");
+
+        app.get('/services', async (req, res) => {
+            const query = {};
+            const result = await DocServiceDBCollectoin.find(query).toArray();
+            res.send(result);
+        });
+
+        app.get('/services/:name', async (req, res) => {
+            const name = req.params.name;
+            let query = { name: name };
+            const results = await DocServiceDBCollectoin.find(query).toArray();
+            res.send(results);
+        });
+
+
+        app.post('/booking', async (req, res) => {
+            const booking = req.body;
+            const result = await BookingCollectoin.insertOne(booking);
+            res.send(result);
+
+
+
+
+        })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 
 
-
-
-
-
-
-
     finally {
-        
+
         //   await client.close();
     }
 }
