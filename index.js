@@ -20,31 +20,39 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
 
     try {
-        const DocServiceDBCollectoin = client.db("DocServiceDB").collection("Services");
-        const BookingCollectoin = client.db("DocServiceDB").collection("Bookings");
+        const DocServiceDBCollection = client.db("DocServiceDB").collection("Services");
+        const AppointmentsCollection = client.db("DocServiceDB").collection("appointmentOptions");
+        const BookingCollection = client.db("DocServiceDB").collection("Bookings");
 
         app.get('/services', async (req, res) => {
             const query = {};
-            const result = await DocServiceDBCollectoin.find(query).toArray();
+            const result = await DocServiceDBCollection.find(query).toArray();
             res.send(result);
         });
 
         app.get('/services/:name', async (req, res) => {
             const name = req.params.name;
             let query = { name: name };
-            const results = await DocServiceDBCollectoin.find(query).toArray();
+            const results = await DocServiceDBCollection.find(query).toArray();
             res.send(results);
         });
+
+        app.get('/appointmentOptions', async (req, res) => {
+            const date = req.query.date;
+            console.log(date);
+
+            const query = {};
+            const result = await AppointmentsCollection.find(query).toArray();
+            res.send(result);
+        })
+
 
 
         app.post('/booking', async (req, res) => {
             const booking = req.body;
-            const result = await BookingCollectoin.insertOne(booking);
+            const result = await BookingCollection.insertOne(booking);
             res.send(result);
         });
-
-        
-
 
 
 
