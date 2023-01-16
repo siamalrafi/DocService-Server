@@ -51,7 +51,7 @@ async function run() {
                 const remainingSlots = option.slots.filter(slot => !bookedSlots.includes(slot))
                 option.slots = remainingSlots;
             });
-            console.log(options);
+            // console.log(options);
 
             res.send(options);
         })
