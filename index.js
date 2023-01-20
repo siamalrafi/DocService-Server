@@ -23,6 +23,7 @@ async function run() {
         const DocServiceDBCollection = client.db("DocServiceDB").collection("Services");
         const AppointmentsCollection = client.db("DocServiceDB").collection("appointmentOptions");
         const BookingCollection = client.db("DocServiceDB").collection("Bookings");
+        const UserCollection = client.db("DocServiceDB").collection("users");
 
         app.get('/services', async (req, res) => {
             const query = {};
@@ -54,8 +55,14 @@ async function run() {
             // console.log(options);
 
             res.send(options);
-        })
+        });
 
+        app.get('/bookings', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const result = await BookingCollection.find(query).toArray();
+            res.send(result);
+        });
 
 
         app.post('/booking', async (req, res) => {
@@ -65,7 +72,11 @@ async function run() {
         });
 
 
-
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const result = await UserCollection.insertOne(user);
+            res.send(result)
+        })
 
 
 
