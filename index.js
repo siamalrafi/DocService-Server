@@ -6,6 +6,7 @@ const { sign } = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { request } = require('express');
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -14,6 +15,8 @@ app.use(express.json());
 
 // DocServiceDB
 // 29winpaq7nNvVqgS
+
+
 
 const uri = `mongodb+srv://${process.env.SECRET_DB_NAME}:${process.env.SECRET_DB_PASS}@cluster0.ksaovkw.mongodb.net/?retryWrites=true&w=majority`
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
@@ -33,8 +36,8 @@ function verifyJWT(req, res, next) {
             return res.status(403).send({ message: 'forbidden access' })
         }
         req.decoded = decoded;
-        next();
-    })
+    });
+    next();
 
 }
 async function run() {
@@ -45,6 +48,7 @@ async function run() {
         const BookingCollection = client.db("DocServiceDB").collection("Bookings");
         const UsersCollection = client.db("DocServiceDB").collection("users");
         const DoctorsCollection = client.db("DocServiceDB").collection("Doctors");
+        const PaymentsCollection = client.db("DocServiceDB").collection("payments");
 
 
         const verifyAdmin = async (req, res, next) => {
@@ -95,16 +99,56 @@ async function run() {
 
         app.get('/bookings', verifyJWT, async (req, res) => {
             const email = req.query.email;
-            const decodedEmail = req.decoded.email;
-
-            if (email !== decodedEmail) {
-                return res.status(403).send({ message: 'forbidden access' });
-            }
+            /*  authHeader = req.headers.authorization
+ 
+             if (!authHeader) {
+                 return res.status(401).send('unauthorized access');
+             }
+ 
+             const token = authHeader.split(' ')[1];
+ 
+             jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+                 if (err) {
+                     return res.status(403).send({ message: 'forbidden access' })
+                 }
+                 req.decoded = decoded;
+             })
+ 
+             const decodedEmail = req.decoded.email;
+ 
+             if (email !== decodedEmail) {
+                 return res.status(403).send({ message: 'forbidden access' });
+             } */
 
             const query = { email: email };
             const bookings = await BookingCollection.find(query).toArray();
             res.send(bookings);
+        });
+
+        app.get('/bookings/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const booking = await BookingCollection.findOne(query);
+            console.log(booking);
+            res.send(booking);
         })
+
+
+
+        app.get('/addPrice', async (req, res) => {
+            const query = {};
+            const option = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    price: 99
+                }
+            };
+            const results = await AppointmentsCollection.updateMany(query, updatedDoc, option)
+            console.log(results);
+            res.send(results);
+        });
+
+
 
         app.post('/booking', async (req, res) => {
             const booking = req.body;
@@ -157,7 +201,7 @@ async function run() {
             //     return res.status(403).send('unauthorized access.')
             // }
 
-            
+
             // Make a admin 
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
@@ -197,11 +241,41 @@ async function run() {
             const result = await DoctorsCollection.deleteOne(query);
             console.log(result);
             res.send(result);
+        });
+
+        // payment system integration tests
+        app.post('/create-payment-intent', async (req, res) => {
+            const booking = req.body;
+            const price = booking.price;
+            const amount = price * 100;
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: 'usd',
+                amount: amount,
+                "payment_method_types": [
+                    "card"
+                ]
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        });
+
+
+        app.post('/payments', async (req, res) => {
+            const payment = req.body;
+            const result = await PaymentsCollection.insertOne(payment);
+            const id = payment.bookingId
+            const filter = { _id: ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+            const updatedResult = await BookingCollection.updateOne(filter, updatedDoc)
+            res.send(result);
         })
-
-
-
-
 
 
 
