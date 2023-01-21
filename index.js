@@ -53,7 +53,6 @@ async function run() {
 
         const verifyAdmin = async (req, res, next) => {
             const decodedEmail = req.decoded.email;
-            console.log(decodedEmail);
             const query = { email: decodedEmail };
             const user = await UsersCollection.findOne(query);
 
@@ -92,7 +91,6 @@ async function run() {
                 const remainingSlots = option.slots.filter(slot => !bookedSlots.includes(slot))
                 option.slots = remainingSlots;
             });
-            // console.log(options);
 
             res.send(options);
         });
@@ -129,7 +127,6 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const booking = await BookingCollection.findOne(query);
-            console.log(booking);
             res.send(booking);
         })
 
@@ -144,10 +141,8 @@ async function run() {
                 }
             };
             const results = await AppointmentsCollection.updateMany(query, updatedDoc, option)
-            console.log(results);
             res.send(results);
         });
-
 
 
         app.post('/booking', async (req, res) => {
@@ -155,6 +150,21 @@ async function run() {
             const result = await BookingCollection.insertOne(booking);
             res.send(result);
         });
+
+        app.delete('/booking/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await BookingCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
+
+
+
+
+
+
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
@@ -188,6 +198,16 @@ async function run() {
             const user = req.body;
             const result = await UsersCollection.insertOne(user);
             res.send(result)
+        });
+
+
+        app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await UsersCollection.deleteOne(query);
+            res.send(result);
+
+
         });
 
 
@@ -239,9 +259,9 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await DoctorsCollection.deleteOne(query);
-            console.log(result);
             res.send(result);
         });
+
 
         // payment system integration tests
         app.post('/create-payment-intent', async (req, res) => {
