@@ -45,6 +45,7 @@ async function run() {
     try {
         const DocServiceDBCollection = client.db("DocServiceDB").collection("Services");
         const AppointmentsCollection = client.db("DocServiceDB").collection("appointmentOptions");
+        const BlogsCollection = client.db("DocServiceDB").collection("Blogs");
         const BookingCollection = client.db("DocServiceDB").collection("Bookings");
         const UsersCollection = client.db("DocServiceDB").collection("users");
         const DoctorsCollection = client.db("DocServiceDB").collection("Doctors");
@@ -60,9 +61,7 @@ async function run() {
                 return res.status(403).send({ message: 'forbidden access' })
             }
             next();
-        }
-
-
+        };
 
         app.get('/services', async (req, res) => {
             const query = {};
@@ -94,6 +93,27 @@ async function run() {
 
             res.send(options);
         });
+
+        app.get('/blogs', async (req, res) => {
+            const query = {};
+            const results = await BlogsCollection.find(query).toArray();
+            console.log(results);
+            res.send(results);
+
+        })
+
+        app.get('/blogs/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await BlogsCollection.findOne(query)
+            console.log(result);
+            res.send(result)
+        })
+
+
+
+
+
 
         app.get('/bookings', verifyJWT, async (req, res) => {
             const email = req.query.email;
@@ -128,9 +148,7 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const booking = await BookingCollection.findOne(query);
             res.send(booking);
-        })
-
-
+        });
 
         app.get('/addPrice', async (req, res) => {
             const query = {};
@@ -144,7 +162,6 @@ async function run() {
             res.send(results);
         });
 
-
         app.post('/booking', async (req, res) => {
             const booking = req.body;
             const result = await BookingCollection.insertOne(booking);
@@ -156,15 +173,7 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await BookingCollection.deleteOne(query);
             res.send(result);
-        })
-
-
-
-
-
-
-
-
+        });
 
         app.get('/jwt', async (req, res) => {
             const email = req.query.email;
@@ -178,7 +187,6 @@ async function run() {
             res.status(403).send({ accessToken: '' });
 
         });
-
 
         app.get('/users', async (req, res) => {
             const query = {};
@@ -199,7 +207,6 @@ async function run() {
             const result = await UsersCollection.insertOne(user);
             res.send(result)
         });
-
 
         app.delete('/users/:id', async (req, res) => {
             const id = req.params.id;
