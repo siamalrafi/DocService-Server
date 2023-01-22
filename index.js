@@ -121,18 +121,6 @@ async function run() {
             res.send(booking);
         });
 
-        app.get('/addPrice', async (req, res) => {
-            const query = {};
-            const option = { upsert: true };
-            const updatedDoc = {
-                $set: {
-                    price: 99
-                }
-            };
-            const results = await AppointmentsCollection.updateMany(query, updatedDoc, option)
-            res.send(results);
-        });
-
         app.post('/booking', async (req, res) => {
             const booking = req.body;
             const result = await BookingCollection.insertOne(booking);
@@ -275,15 +263,6 @@ async function run() {
     }
 }
 run().catch(error => console.log(error));
-
-
-
-
-
-
-
-
-
 
 app.get('/', (req, res) => {
     res.send('DocService! This is the DocService Server.')
