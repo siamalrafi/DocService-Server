@@ -109,27 +109,6 @@ async function run() {
 
         app.get('/bookings', verifyJWT, async (req, res) => {
             const email = req.query.email;
-            /*  authHeader = req.headers.authorization
- 
-             if (!authHeader) {
-                 return res.status(401).send('unauthorized access');
-             }
- 
-             const token = authHeader.split(' ')[1];
- 
-             jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
-                 if (err) {
-                     return res.status(403).send({ message: 'forbidden access' })
-                 }
-                 req.decoded = decoded;
-             })
- 
-             const decodedEmail = req.decoded.email;
- 
-             if (email !== decodedEmail) {
-                 return res.status(403).send({ message: 'forbidden access' });
-             } */
-
             const query = { email: email };
             const bookings = await BookingCollection.find(query).toArray();
             res.send(bookings);
@@ -212,15 +191,6 @@ async function run() {
 
         app.put('/users/admin/:id', verifyJWT, verifyAdmin, async (req, res) => {
 
-            // check == Is user a valid? 
-            // const decodedEmail = req.decoded.email;
-            // const query = { email: decodedEmail };
-            // const user = await UsersCollection.findOne(query);
-            // if (user?.role != 'admin') {
-            //     return res.status(403).send('unauthorized access.')
-            // }
-
-
             // Make a admin 
             const id = req.params.id;
             const filter = { _id: ObjectId(id) }
@@ -295,9 +265,6 @@ async function run() {
             const updatedResult = await BookingCollection.updateOne(filter, updatedDoc)
             res.send(result);
         })
-
-
-
 
     }
 
