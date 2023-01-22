@@ -97,23 +97,15 @@ async function run() {
         app.get('/blogs', async (req, res) => {
             const query = {};
             const results = await BlogsCollection.find(query).toArray();
-            console.log(results);
             res.send(results);
-
         })
 
         app.get('/blogs/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await BlogsCollection.findOne(query)
-            console.log(result);
             res.send(result)
-        })
-
-
-
-
-
+        });
 
         app.get('/bookings', verifyJWT, async (req, res) => {
             const email = req.query.email;
